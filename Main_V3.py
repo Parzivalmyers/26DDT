@@ -88,7 +88,7 @@ def show_all_medicine():
 
     #Create a new window
     list_win = tk.Toplevel(window)
-    list_win.title("Medicine List (select item to delete)")
+    list_win.title("Medicine List")
     list_win.geometry("520x300")
 
     #Set a list in the new window
@@ -119,10 +119,55 @@ def show_all_medicine():
             global medicine_list
             medicine_list = current_data
             refresh_listbox()
+    #Edit information of seleted medicine 
+    def edit_selected():
+        #Get the row number of the user's selected item in the list box.
+        selected_index = lb.curselection()
+        if not selected_index:
+            messagebox.showwarning("Please select one record first!")
+            return
+        pos = selected_index[0]
+        current_data = load_data()
+        target_item = current_data[pos]
+
+        #Create a pop-up child window for editing
+        edit_win = tk.Toplevel(list_win)
+        edit_win.title("Edit Recorded Medicine")
+        edit_win.geometry("520x300")
+
+        #Editting Window
+        tk.Label(edit_win, text="Medicine Name:").pack()#Pre‑fill the original name
+        new_name_entry = tk.Entry(edit_win,width=28)
+        new_name_entry.insert(0, target_item["name"])#Fill the old name into the input box
+        new_name_entry.pack()
+
+        tk.Label(edit_win, text="Time(HH:MM):").pack()#Pre‑fill the original time
+        new_time_entry = tk.Entry(edit_win,width=28)
+        new_time_entry.insert(0, target_item["time"])#Fill the old time into the input box
+        new_time_entry.pack(pady=5)
+
+        #Save the new record
+        def save_edit():
+            new_name = new_name_entry.get().strip
+            new_time = new_time_entry.get().strip
+            if not new_name or not new_time:
+                messagebox.showwarning("Name or time cannot be empty!")
+                return
+            #Overwrite the data at the corresponding position in the original list
+            current_data[pos]["name"] = new_name
+            current_data[pos]["time"] = new_time
+            save_data(current_data)
+            global medicine_list
+            medicine_list = current_data
+            refresh_listbox()
+            edit_win.destroy()
+            messagebox.showinfo("success", "Medicine updated")
+        tk.Button(edit_win, text="Save Changes", command=save_edit).pack(pady=8)
 
     refresh_listbox()
+    tk.Button(list_win, text="Edit Selected Item", command=edit_selected, bg="#88bbff").pack(pady=5)
     tk.Button(list_win, text="Delete Selected Item", command=delete_selected, bg="#ff8888").pack(pady=5)
-
+    
 
 # Start Background Thread
 monitor_thread = threading.Thread(target=monitor_time, daemon=True)
