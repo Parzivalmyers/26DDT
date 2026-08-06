@@ -79,7 +79,7 @@ def monitor_time():
                 already_reminded.clear()
         time.sleep(30)
 
-#Show all medicine in list（Vision 3 changed）
+#Show all medicine in list（Vision 3 newly added）
 def show_all_medicine():
     # Read the latest data
     data = load_data()
@@ -119,6 +119,7 @@ def show_all_medicine():
             global medicine_list
             medicine_list = current_data
             refresh_listbox()
+
     #Edit information of seleted medicine 
     def edit_selected():
         #Get the row number of the user's selected item in the list box.
@@ -148,8 +149,8 @@ def show_all_medicine():
 
         #Save the new record
         def save_edit():
-            new_name = new_name_entry.get().strip
-            new_time = new_time_entry.get().strip
+            new_name = new_name_entry.get().strip()
+            new_time = new_time_entry.get().strip()
             if not new_name or not new_time:
                 messagebox.showwarning("Name or time cannot be empty!")
                 return
@@ -164,6 +165,7 @@ def show_all_medicine():
             messagebox.showinfo("success", "Medicine updated")
         tk.Button(edit_win, text="Save Changes", command=save_edit).pack(pady=8)
 
+    #Vision 3 newly added
     refresh_listbox()
     tk.Button(list_win, text="Edit Selected Item", command=edit_selected, bg="#88bbff").pack(pady=5)
     tk.Button(list_win, text="Delete Selected Item", command=delete_selected, bg="#ff8888").pack(pady=5)
