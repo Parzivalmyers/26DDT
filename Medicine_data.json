@@ -1,35 +1,26 @@
 [
   {
-    "name": "Sertraline",
-    "time": "10:00"
+    "name": "Paracetamol",
+    "time": "13:43"
   },
   {
-    "name": "Amantadine",
-    "time": "10:00"
-  },
-  {
-    "name": "Propranolol",
-    "time": "11:30"
-  },
-  {
-    "name": "Isoniazid",
-    "time": "14:00"
+    "name": "Ibuprofen",
+    "time": "13:45"
   },
   {
     "name": "Cetirizine",
-    "time": "13:00"
+    "time": "14:20"
   },
   {
-    "name": "Amoxicillin",
-    "time": "1:56"
+    "name": "Panadol",
+    "time": "14:00"
   },
   {
-    "name": "Levofloxacin",
-    "time": "13:57"
+    "name": "Naprogesic",
+    "time": "12:30"
   },
   {
-    "name": "Metformin",
-    "time": "13:59"
-  },
-  {
-    "name": 
+    "name": "123",
+    "time": "123"
+  }
+]

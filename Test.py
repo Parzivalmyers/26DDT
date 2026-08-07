@@ -12,6 +12,17 @@ from datetime import datetime
 #Store data file name（Vision 2 newly added）
 DATA_FILE = "Medicine_data.json"
 
+def refresh_listbox():
+        
+        lb = tk.Listbox(list_win, width=55, height=12)
+        lb.pack(padx=10,pady=10)
+        lb.delete(0,tk.END)
+        current = load_data()
+        if len(current) == 0:
+            lb.insert(tk.END, "No medicines have been added yet!")
+        else:
+            for idx, item in enumerate(current, start=1):
+                lb.insert(tk.END, f"{idx}. {item['name']} --- {item['time']}")
 
 #Read Saved Data（Vision 2 newly added）
 def load_data():
@@ -99,15 +110,6 @@ def show_all_medicine():
     #Set a list in the new window
     lb = tk.Listbox(list_win, width=55, height=12)
     lb.pack(padx=10,pady=10)
-
-    def refresh_listbox():
-        lb.delete(0,tk.END)
-        current = load_data()
-        if len(current) == 0:
-            lb.insert(tk.END, "No medicines have been added yet!")
-        else:
-            for idx, item in enumerate(current, start=1):
-                lb.insert(tk.END, f"{idx}. {item['name']} --- {item['time']}")
 
     #Delete the medicine in the list
     def delete_selected():
