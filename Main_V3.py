@@ -36,7 +36,6 @@ window = tk.Tk()
 window.title("Medication Reminder")
 window.geometry("500x300")
 
-
 #Create a text label on the window（Vision 2 newly added）
 tk.Label(window, text="Medication Reminder", font=("Arial",16)).pack(pady=8)
 
@@ -53,6 +52,21 @@ med_time.pack()
 #Store Medicine List
 medicine_list = load_data()
 
+#Track opened list windows(Vision 3 newly added)
+list_window_ref = None# Save the reference to the list window
+list_refresh_func = None# Save the refresh function for the list window
+
+#Refresh the opened list window
+def refresh_opened_list():
+    global list_refresh_func
+    if list_refresh_func is not None:
+        try:
+            list_refresh_func()
+        except Exception as e:
+            # Reset the reference if the window has been closed
+            print(f"Error occurred while refreshing the list: {e}")
+            list_refresh_func = None
+
 def add_medicine():
     name = med_name.get().strip ()
     time_str = med_time.get().strip ()
@@ -65,6 +79,9 @@ def add_medicine():
     messagebox.showinfo("Successfully",f"You will be reminded to take {name} on {time_str}")
     med_name.delete(0,tk.END)
     med_time.delete(0,tk.END)
+    #Refresh the opened list window after adding the medicine(Vision 3 newly added)
+    refresh_opened_list()
+
     
 #Background Monitoring Function
 def monitor_time():
@@ -86,15 +103,26 @@ def monitor_time():
 
 #Show all medicine in list（Vision 3 newly added）
 def show_all_medicine():
+    #Reference global variables
+    global list_window_ref, list_refresh_func
     # Read the latest data
     data = load_data()
     global medicine_list
     medicine_list = data
 
+    #If the window already exists, refresh it and bring it to the foreground directly.
+    if list_window_ref is not None and list_window_ref.winfo_exists():
+        list_window_ref.lift()
+        refresh_opened_list()
+        return
+
     #Create a new window
     list_win = tk.Toplevel(window)
     list_win.title("Medicine List")
     list_win.geometry("520x300")
+
+    #Save window reference
+    list_window_ref = list_win
 
     #Set a list in the new window
     lb = tk.Listbox(list_win, width=55, height=12)
@@ -108,6 +136,9 @@ def show_all_medicine():
         else:
             for idx, item in enumerate(current, start=1):
                 lb.insert(tk.END, f"{idx}. {item['name']} --- {item['time']}")
+
+    #Save the refresh function to a global variable
+    list_refresh_func = refresh_listbox
 
     #Delete the medicine in the list
     def delete_selected():
@@ -129,6 +160,8 @@ def show_all_medicine():
             global medicine_list
             medicine_list = current_data
             refresh_listbox()
+            #Refresh all opened list windows after deletion
+            refresh_opened_list()
 
     #Edit information of seleted medicine 
     def edit_selected():
@@ -178,12 +211,24 @@ def show_all_medicine():
             refresh_listbox()
             edit_win.destroy()
             messagebox.showinfo("success", "Medicine updated")
+            #Refresh all opened list windows after editing
+            refresh_opened_list()
+
         tk.Button(edit_win, text="Save Changes", command=save_edit).pack(pady=8)
 
     #Vision 3 newly added
     refresh_listbox()
     tk.Button(list_win, text="Edit Selected Item", command=edit_selected, bg="#88bbff").pack(pady=5)
     tk.Button(list_win, text="Delete Selected Item", command=delete_selected, bg="#ff8888").pack(pady=5)
+
+    #Clean up global references when the window is closed
+    def on_list_window_close():
+        global list_window_ref, list_refresh_func
+        list_window_ref = None
+        list_refresh_func = None
+        list_win.destroy()
+
+    list_win.protocol("WM_DELETE_WINDOW", on_list_window_close)
     
 
 # Start Background Thread
