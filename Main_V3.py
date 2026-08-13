@@ -338,8 +338,8 @@ def show_all_medicine():
 
     #Vision 3 newly added
     refresh_listbox()
-    tk.Button(list_win, text="Edit Selected Item", command=edit_selected, bg="#88bbff").pack(pady=5)
-    tk.Button(list_win, text="Delete Selected Item", command=delete_selected, bg="#ff8888").pack(pady=5)
+    tk.Button(list_win, text="Edit Selected Item", command=edit_selected).pack(pady=5)
+    tk.Button(list_win, text="Delete Selected Item", command=delete_selected).pack(pady=5)
 
     #Clean up global references when the window is closed
     def on_list_window_close():
