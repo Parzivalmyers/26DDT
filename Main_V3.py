@@ -325,4 +325,3 @@ tk.Button(window, text="Show All Medicines", command=show_all_medicine).pack(pad
 
 #Message loop(Place it at the end to keep the window displayed)
 window.mainloop()
-jend
