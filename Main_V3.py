@@ -4,6 +4,7 @@ from tkinter import messagebox
 #Vision 2 newly added
 import json
 import os
+import re
 import time
 import threading
 from datetime import datetime
@@ -52,18 +53,18 @@ med_time.pack()
 
 #Medication Dosage Input
 tk.Label(window, text= "Dosage").pack()
-med_name = tk.Entry(window, width=30)
-med_name.pack()
+med_dosage = tk.Entry(window, width=30)
+med_dosage.pack()
 
 #Reminder Date Input
 tk.Label(window, text= "Reminder Date (YYYY-MM-DD)").pack()
-med_name = tk.Entry(window, width=30)
-med_name.pack()
+med_date = tk.Entry(window, width=30)
+med_date.pack()
 
 #Note Input
 tk.Label(window, text= "Note (Optional)").pack()
-med_name = tk.Entry(window, width=30)
-med_name.pack()
+med_note = tk.Entry(window, width=30)
+med_note.pack()
 
 #Store Medicine List
 medicine_list = load_data()
@@ -102,12 +103,12 @@ def add_medicine():
         return
 
     #Validate time form
-    for one_time in items:
+    for one_time in times:
         try:
             datetime.strptime(one_time, "%H:%M")
         except ValueError:
             messagebox.showwarning("Invalid Time", f"Invalid time: {one_time}\nPlease follow HH:MM form")
-        return
+            return
 
     #Validate date form
     try:
@@ -122,7 +123,7 @@ def add_medicine():
     
     medicine_list.append({"name":name,"time": ",".join(times), "dosage": dosage, "date": reminder_date, "note": note})
     save_data(medicine_list)
-    messagebox.showinfo("Successfully",f"You will be reminded to take{dosage} {name} on{reminder_date} at {','.join(times)}.\n"f"Note: {note or 'None'}")
+    messagebox.showinfo("Successfully",f"You will be reminded to take {dosage} {name} on{reminder_date} at {','.join(times)}.\n"f"Note: {note or 'None'}")
     med_name.delete(0,tk.END)
     med_time.delete(0,tk.END)
     med_dosage.delete(0,tk.END)
@@ -161,7 +162,7 @@ def monitor_time():
                     #Optional show the note
                     note = med.get("note", "")
                     # Pop-up Reminder
-                    window.after(0, lambda m=med, d=dosage, n=note, t=med_t:messagebox.showinfo("Medication Reminder",f"It's time to take{d} {m.get['name','']}!\n" f"Note: {n or 'None'}"))
+                    window.after(0, lambda m=med, d=med_dosage, n=note, t=med_t:messagebox.showinfo("Medication Reminder", f"It's time to take{d} {m.get('name','')}!\n" f"Note: {n or 'None'}"))
                     already_reminded.add(key)
         # Cross-day Reset Reminder Flag
         if now == "00:00":
@@ -207,7 +208,7 @@ def show_all_medicine():
                 lb.insert(tk.END, 
                           f"{idx}. {item.get('name', '')} --- {item.get('date', 'Not set')}"
                           f"Times: {item.get('time', '')} --- Dosage: {item.get('dosage', 'Not set')}"
-                          f"Note: {item.get('note', '')} --- {item.get('date', 'Not set')}"
+                          f"Note: {item.get('note', '')} --- {item.get('None')}"
                           )
 
     #Save the refresh function to a global variable
@@ -255,7 +256,8 @@ def show_all_medicine():
         #Create a pop-up child window for editing
         edit_win = tk.Toplevel(list_win)
         edit_win.title("Edit Recorded Medicine")
-        edit_win.geometry("520x300")
+        edit_win.geometry("600x500")
+        edit_win.minsize(600,500)
 
         #Editting Window
         tk.Label(edit_win, text="Medicine Name:").pack()#Pre‑fill the original name
@@ -268,6 +270,21 @@ def show_all_medicine():
         new_time_entry.insert(0, target_item["time"])#Fill the old time into the input box
         new_time_entry.pack(pady=5)
 
+        tk.Label(edit_win, text="Dosage:").pack()#Pre‑fill the original dosage
+        new_dosage_entry = tk.Entry(edit_win,width=28)
+        new_dosage_entry.insert(0, target_item["dosage"])#Fill the old dosage into the input box
+        new_dosage_entry.pack(pady=5)
+
+        tk.Label(edit_win, text="Remind Date (YYYY-MM-DD):").pack()#Pre‑fill the original date
+        new_date_entry = tk.Entry(edit_win,width=28)
+        new_date_entry.insert(0, target_item["date"])#Fill the old date into the input box
+        new_date_entry.pack(pady=5)
+
+        tk.Label(edit_win, text="Note:").pack()#Pre‑fill the original note
+        new_note_entry = tk.Entry(edit_win,width=28)
+        new_note_entry.insert(0, target_item["note"])#Fill the old note into the input box
+        new_note_entry.pack(pady=5)
+
         #Save the new record
         def save_edit():
             new_name = new_name_entry.get().strip()
@@ -276,15 +293,38 @@ def show_all_medicine():
             new_date = new_date_entry.get().strip()
             new_note = new_note_entry.get().strip()
 
-            if not new_name or not new_time:
+            if not new_name or not new_time or not new_dosage or not new_date:
                 messagebox.showwarning("Name, time,dosage and date cannot be empty!")
                 return
 
             #Validate every edited reminder time.
+            new_times = [item.strip() for item in new_time.split(",") if item.strip()]
+            if not new_times:
+                messagebox.showwarning("Invalid Time", "Please enter at least one time.")
+                return
+
+            #Validate every edited time form
+            for one_time in new_times:
+                try:
+                    datetime.strptime(one_time, "%H:%M")
+                except ValueError:
+                    messagebox.showwarning("Invalid Time", f"Invalid time: {one_time}\nPlease follow HH:MM form")
+                    return
+
+            #Validate every edited date form
+            
+            try:
+                datetime.strptime(new_date, "%Y-%m-%d")
+            except ValueError:
+                messagebox.showwarning("Invalid Time", f"Invalid Date: {new_date}\nPlease follow YYYY-MM-DD form")
+                return
 
             #Overwrite the data at the corresponding position in the original list
             current_data[pos]["name"] = new_name
-            current_data[pos]["time"] = new_time
+            current_data[pos]["time"] = ",".join(new_times)
+            current_data[pos]["dosage"] = new_dosage
+            current_data[pos]["date"] = new_date
+            current_data[pos]["note"] = new_note
             save_data(current_data)
             global medicine_list
             medicine_list = current_data
