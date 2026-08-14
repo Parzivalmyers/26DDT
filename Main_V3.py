@@ -47,22 +47,22 @@ med_name = tk.Entry(window, width=30)
 med_name.pack()
 
 #Medication Time Input 
-tk.Label(window, text="Administration Time(HH:MM, accept multiple entries separated by commas. )").pack()
+tk.Label(window, text="Administration Time (HH:MM):").pack()
 med_time = tk.Entry(window, width=30)
 med_time.pack()
 
 #Medication Dosage Input
-tk.Label(window, text= "Dosage").pack()
+tk.Label(window, text= "Dosage:").pack()
 med_dosage = tk.Entry(window, width=30)
 med_dosage.pack()
 
 #Reminder Date Input
-tk.Label(window, text= "Reminder Date (YYYY-MM-DD)").pack()
+tk.Label(window, text= "Reminder Date (YYYY-MM-DD):").pack()
 med_date = tk.Entry(window, width=30)
 med_date.pack()
 
 #Note Input
-tk.Label(window, text= "Note (Optional)").pack()
+tk.Label(window, text= "Note (Optional):").pack()
 med_note = tk.Entry(window, width=30)
 med_note.pack()
 
@@ -158,11 +158,11 @@ def monitor_time():
             for med_t in med_times:
                 key = f"{med.get('name', '')}_{today}_{med_t}"
                 if now == med_t and key not in already_reminded:
-                    
-                    #Optional show the note
+                    #Get the dosage and remarks from the dictionary
+                    dosage = med.get("dosage", "")
                     note = med.get("note", "")
                     # Pop-up Reminder
-                    window.after(0, lambda m=med, d=med_dosage, n=note, t=med_t:messagebox.showinfo("Medication Reminder", f"It's time to take{d} {m.get('name','')}!\n" f"Note: {n or 'None'}"))
+                    window.after(0, lambda m=med, d=dosage, n=note, t=med_t:messagebox.showinfo("Medication Reminder", f"It's time to take{d} {m.get('name','')}!\n" f"Note: {n or 'None'}"))
                     already_reminded.add(key)
         # Cross-day Reset Reminder Flag
         if now == "00:00":
@@ -208,7 +208,7 @@ def show_all_medicine():
                 lb.insert(tk.END, 
                           f"{idx}. {item.get('name', '')} --- {item.get('date', 'Not set')}"
                           f"Times: {item.get('time', '')} --- Dosage: {item.get('dosage', 'Not set')}"
-                          f"Note: {item.get('note', '')} --- {item.get('None')}"
+                          f"Note: {item.get('note', '') or 'None'}"
                           )
 
     #Save the refresh function to a global variable
@@ -262,27 +262,27 @@ def show_all_medicine():
         #Editting Window
         tk.Label(edit_win, text="Medicine Name:").pack()#Pre‑fill the original name
         new_name_entry = tk.Entry(edit_win,width=28)
-        new_name_entry.insert(0, target_item["name"])#Fill the old name into the input box
+        new_name_entry.insert(0, target_item.get("name", ""))#Fill the old name into the input box
         new_name_entry.pack()
 
         tk.Label(edit_win, text="Time(HH:MM):").pack()#Pre‑fill the original time
         new_time_entry = tk.Entry(edit_win,width=28)
-        new_time_entry.insert(0, target_item["time"])#Fill the old time into the input box
+        new_time_entry.insert(0, target_item.get("time", ""))#Fill the old time into the input box
         new_time_entry.pack(pady=5)
 
         tk.Label(edit_win, text="Dosage:").pack()#Pre‑fill the original dosage
         new_dosage_entry = tk.Entry(edit_win,width=28)
-        new_dosage_entry.insert(0, target_item["dosage"])#Fill the old dosage into the input box
+        new_dosage_entry.insert(0, target_item.get("dosage", ""))#Fill the old dosage into the input box
         new_dosage_entry.pack(pady=5)
 
         tk.Label(edit_win, text="Remind Date (YYYY-MM-DD):").pack()#Pre‑fill the original date
         new_date_entry = tk.Entry(edit_win,width=28)
-        new_date_entry.insert(0, target_item["date"])#Fill the old date into the input box
+        new_date_entry.insert(0, target_item.get("date", ""))#Fill the old date into the input box
         new_date_entry.pack(pady=5)
 
         tk.Label(edit_win, text="Note:").pack()#Pre‑fill the original note
         new_note_entry = tk.Entry(edit_win,width=28)
-        new_note_entry.insert(0, target_item["note"])#Fill the old note into the input box
+        new_note_entry.insert(0, target_item.get("note", ""))#Fill the old note into the input box
         new_note_entry.pack(pady=5)
 
         #Save the new record
@@ -316,7 +316,7 @@ def show_all_medicine():
             try:
                 datetime.strptime(new_date, "%Y-%m-%d")
             except ValueError:
-                messagebox.showwarning("Invalid Time", f"Invalid Date: {new_date}\nPlease follow YYYY-MM-DD form")
+                messagebox.showwarning("Invalid Date", f"Invalid Date: {new_date}\nPlease follow YYYY-MM-DD form")
                 return
 
             #Overwrite the data at the corresponding position in the original list
@@ -330,16 +330,23 @@ def show_all_medicine():
             medicine_list = current_data
             refresh_listbox()
             edit_win.destroy()
-            messagebox.showinfo("success", "Medicine updated")
+            messagebox.showinfo("Success", "Medicine updated")
             #Refresh all opened list windows after editing
             refresh_opened_list()
 
-        tk.Button(edit_win, text="Save Changes", command=save_edit).pack(pady=8)
+        #Place buttons side-by-side, horizontally centered.(Vision 3 newly added)
+        button_frame = tk.Frame(edit_win)
+        button_frame.pack(pady=12)
+        tk.Button(button_frame, text="Save Changes", command=save_edit).pack(side=tk.LEFT, pady=12)
+        tk.Button(button_frame, text="Cancel", command=edit_win.destroy).pack(side=tk.LEFT, pady=12)
 
     #Vision 3 newly added
     refresh_listbox()
-    tk.Button(list_win, text="Edit Selected Item", command=edit_selected).pack(pady=5)
-    tk.Button(list_win, text="Delete Selected Item", command=delete_selected).pack(pady=5)
+    #Place buttons side-by-side, horizontally centered.
+    list_button_frame = tk.Frame(list_win)
+    list_button_frame.pack(pady=12)
+    tk.Button(list_button_frame, text="Edit Selected Item", command=edit_selected).pack(side=tk.LEFT,pady=12)
+    tk.Button(list_button_frame, text="Delete Selected Item", command=delete_selected).pack(side=tk.LEFT, pady=12)
 
     #Clean up global references when the window is closed
     def on_list_window_close():
@@ -355,10 +362,13 @@ def show_all_medicine():
 monitor_thread = threading.Thread(target=monitor_time, daemon=True)
 monitor_thread.start()
 
+#Place buttons side-by-side, horizontally centered.
+main_button_frame = tk.Frame(window)
+main_button_frame.pack(pady=12)
 #Add Medicine Button    
-tk.Button(window, text="Add Medicine", command=add_medicine).pack(pady=10)
+tk.Button(main_button_frame, text="Add Medicine", command=add_medicine).pack(side=tk.LEFT, pady=12)
 #Show All Medicines BUtton (Vision 2 newly added）
-tk.Button(window, text="Show All Medicines", command=show_all_medicine).pack(pady=10)
+tk.Button(main_button_frame, text="Show All Medicines", command=show_all_medicine).pack(side=tk.LEFT, pady=12)
 
 
 
