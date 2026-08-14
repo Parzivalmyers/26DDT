@@ -1,30 +1,46 @@
 [
   {
     "name": "Paracetamol",
-    "time": "13:43"
+    "time": "13:43",
+    "dosage": "500 mg",
+    "date": "2026-7-14",
+    "note": "",
+    "reminded_times": []
   },
   {
     "name": "Ibuprofen",
+    "dosage": "200 mg",
+    "date": "2026-8-19",
     "time": "13:45"
   },
   {
     "name": "Cetirizine",
+    "dosage": "5 mg",
+    "date": "2026-8-20",
     "time": "14:20"
   },
   {
     "name": "Panadol",
+    "dosage": "4000 mg",
+    "date": "2026-8-21",
     "time": "14:00"
   },
   {
     "name": "Naprogesic",
+    "dosage": "275 mg",
+    "date": "2026-8-22",
     "time": "12:30"
   },
   {
     "name": "Voltaren Rapid",
+    "dosage": "12.5 mg",
+    "date": "2026-8-23",
     "time": "11:59"
   },
   {
     "name": "Aspirin",
+    "dosage": "300 mg",
+    "date": "2026-8-24",
     "time": "13:13"
   }
 ]

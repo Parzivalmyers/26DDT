@@ -121,7 +121,7 @@ def add_medicine():
         messagebox.showwarning("Invalid Date", "Please follow YYYY-MM-DD form")
         return
     
-    medicine_list.append({"name":name,"time": ",".join(times), "dosage": dosage, "date": reminder_date, "note": note})
+    medicine_list.append({"name":name,"time": ",".join(times), "dosage": dosage, "date": reminder_date, "note": note, "reminded_times": []})
     save_data(medicine_list)
     messagebox.showinfo("Successfully",f"You will be reminded to take {dosage} {name} on{reminder_date} at {','.join(times)}.\n"f"Note: {note or 'None'}")
     med_name.delete(0,tk.END)
@@ -135,7 +135,6 @@ def add_medicine():
     
 #Background Monitoring Function
 def monitor_time():
-    already_reminded = set()
     while True:
     # Get current date and time 
         now_dt = datetime.now()
@@ -156,17 +155,23 @@ def monitor_time():
 
             #Check every recorded time independently.
             for med_t in med_times:
+                #Get the list of reminded times; automatically create an empty list if it does not exist
+                reminded_times = med.setdefault("reminded_times", [])
                 key = f"{med.get('name', '')}_{today}_{med_t}"
-                if now == med_t and key not in already_reminded:
+                if now == med_t and key not in reminded_times:
                     #Get the dosage and remarks from the dictionary
                     dosage = med.get("dosage", "")
                     note = med.get("note", "")
                     # Pop-up Reminder
                     window.after(0, lambda m=med, d=dosage, n=note, t=med_t:messagebox.showinfo("Medication Reminder", f"It's time to take{d} {m.get('name','')}!\n" f"Note: {n or 'None'}"))
-                    already_reminded.add(key)
-        # Cross-day Reset Reminder Flag
-        if now == "00:00":
-            already_reminded.clear()
+
+                    #Permanently save this completed reminder time
+                    reminded_times.append(mde_t)
+                    save_data(medicine_list)
+                
+                    #Refresh Medicine List to show the latest reminder status
+                    window.after(0, refresh_opened_list)
+
         time.sleep(30)
 
 #Show all medicine in list（Vision 3 newly added）
@@ -198,6 +203,32 @@ def show_all_medicine():
     lb = tk.Listbox(list_win, width=55, height=12)
     lb.pack(padx=10,pady=10, fill=tk.BOTH, expand=True)
 
+    #Show reminder status
+    def get_reminder_status(item):
+        times = [
+            one_time.strip()
+            for one_time in item.get("time", "").split(",")
+            if one_time.strip()
+        ]
+
+        reminded_times = item.get("reminded_times", [])
+        reminded_count = sum(
+            one_time in reminded_times
+            for one_time in times
+        )
+
+        if not times:
+            return "No reminder time"
+        if reminded_count == len(times):
+            return "Reminded"
+        if reminded_count > 0:
+            return f"Partially reminded ({reminded_count}/{len(times)})"
+        if item.get("date", "") > datetime.now().strftime("%Y-%m-%d"):
+            return "Not due"
+
+        return "Not reminded"
+
+    #Refresh listbox
     def refresh_listbox():
         lb.delete(0,tk.END)
         current = load_data()
@@ -205,10 +236,13 @@ def show_all_medicine():
             lb.insert(tk.END, "No medicines have been added yet!")
         else:
             for idx, item in enumerate(current, start=1):
+                status = get_reminder_status(item)
+
                 lb.insert(tk.END, 
-                          f"{idx}. {item.get('name', '')} --- {item.get('date', 'Not set')}"
-                          f"Times: {item.get('time', '')} --- Dosage: {item.get('dosage', 'Not set')}"
-                          f"Note: {item.get('note', '') or 'None'}"
+                          f"{idx}. {item.get('name', '')} --- Date: {item.get('date', 'Not set')} ---"
+                          f"Time: {item.get('time', '')} --- Dosage: {item.get('dosage', 'Not set')} ---"
+                          f"Note: {item.get('note', '') or 'None'} ---"
+                          f"Status: {status}"
                           )
 
     #Save the refresh function to a global variable
@@ -287,6 +321,7 @@ def show_all_medicine():
 
         #Save the new record
         def save_edit():
+
             new_name = new_name_entry.get().strip()
             new_time = new_time_entry.get().strip()
             new_dosage = new_dosage_entry.get().strip()
@@ -320,11 +355,19 @@ def show_all_medicine():
                 return
 
             #Overwrite the data at the corresponding position in the original list
+            old_time = current_data[pos].get("time", "")
+            old_date = current_data[pos].get("date", "")
+            new_time_text = ",".join(new_times)
             current_data[pos]["name"] = new_name
-            current_data[pos]["time"] = ",".join(new_times)
-            current_data[pos]["dosage"] = new_dosage
             current_data[pos]["date"] = new_date
+            current_data[pos]["time"] = new_time_text
+            current_data[pos]["dosage"] = new_dosage
             current_data[pos]["note"] = new_note
+
+            #Reset completion status only when the reminder schedule changes
+            if old_time != new_time_text or old_date != new_date:
+                current_data[pos]["reminded_times"] = []
+
             save_data(current_data)
             global medicine_list
             medicine_list = current_data
