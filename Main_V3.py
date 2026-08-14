@@ -157,16 +157,17 @@ def monitor_time():
             for med_t in med_times:
                 #Get the list of reminded times; automatically create an empty list if it does not exist
                 reminded_times = med.setdefault("reminded_times", [])
-                key = f"{med.get('name', '')}_{today}_{med_t}"
-                if now == med_t and key not in reminded_times:
+
+                #This time has not been reminded yet
+                if now == med_t and med_t not in reminded_times:
                     #Get the dosage and remarks from the dictionary
                     dosage = med.get("dosage", "")
                     note = med.get("note", "")
                     # Pop-up Reminder
-                    window.after(0, lambda m=med, d=dosage, n=note, t=med_t:messagebox.showinfo("Medication Reminder", f"It's time to take{d} {m.get('name','')}!\n" f"Note: {n or 'None'}"))
+                    window.after(0, lambda m=med, d=dosage, n=note, t=med_t:messagebox.showinfo("Medication Reminder", f"It's time to take {d} {m.get('name','')}!\n" f"Note: {n or 'None'}"))
 
                     #Permanently save this completed reminder time
-                    reminded_times.append(mde_t)
+                    reminded_times.append(med_t)
                     save_data(medicine_list)
                 
                     #Refresh Medicine List to show the latest reminder status
@@ -189,12 +190,12 @@ def show_all_medicine():
         refresh_opened_list()
         return
 
-    #Create a new window
+    #Create a new window for list
     list_win = tk.Toplevel(window)
     list_win.title("Medicine List")
-    list_win.geometry("600x500")
+    list_win.geometry("700x500")
     #List window minimum size
-    list_win.minsize(600,500)
+    list_win.minsize(700,500)
 
     #Save window reference
     list_window_ref = list_win
@@ -211,20 +212,33 @@ def show_all_medicine():
             if one_time.strip()
         ]
 
-        reminded_times = item.get("reminded_times", [])
-        reminded_count = sum(
-            one_time in reminded_times
-            for one_time in times
-        )
-
         if not times:
-            return "No reminder time"
+            return "No reminder time"       
+
+        reminded_times = item.get("reminded_times", [])
+
+        #Calculate the number of reminded items correctly
+        reminded_count = 0
+        for one_time in times:
+            if one_time in reminded_times:
+                reminded_count += 1
+
+        #Check if all times have been reminded
         if reminded_count == len(times):
             return "Reminded"
+
+        #Check if all records have been reminded
         if reminded_count > 0:
             return f"Partially reminded ({reminded_count}/{len(times)})"
-        if item.get("date", "") > datetime.now().strftime("%Y-%m-%d"):
-            return "Not due"
+
+        #Check if the date is in the future
+        try:
+            reminder_date = datetime.strptime(item.get("date", ""), "%Y-%m-%d").date()
+            today = datetime.now().date()
+            if reminder_date > today:
+                return "Not due"
+        except ValueError:
+            pass
 
         return "Not reminded"
 
@@ -373,7 +387,7 @@ def show_all_medicine():
             medicine_list = current_data
             refresh_listbox()
             edit_win.destroy()
-            messagebox.showinfo("Success", "Medicine updated")
+            messagebox.showinfo("Success", "Record updated")
             #Refresh all opened list windows after editing
             refresh_opened_list()
 
