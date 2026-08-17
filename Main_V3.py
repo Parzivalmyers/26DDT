@@ -19,11 +19,27 @@ def load_data():
     if os.path.exists(DATA_FILE):
         try:
             with open(DATA_FILE, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+
+            #Add reminded_times to old medicine records
+            has_updated_data = False
+
+            for medicine in data:
+                if "reminded_times" not in medicine:
+                    medicine["reminded_times"] = []
+                    has_updated_data = True
+
+            #Save the upgraded old records back to JSON
+            if has_updated_data:
+                save_data(data)
+
+            return data
+
         except json.JSONDecodeError:
             #Return an empty list when the JSON file is corrupted to prevent the program from crashing.(Vision 3 newly added)
             print("Warning: The data file is corrupted, reset to an empty list")
             return []
+
     return []
 
 # Save Data to File
@@ -141,6 +157,8 @@ def monitor_time():
         today = now_dt.strftime("%Y-%m-%d")
         now = now_dt.strftime("%H:%M")
 
+        need_save = False #Mark whether saving is required
+
         #Read multiple time from the same record.
         for med in medicine_list:
             med_times = [
@@ -149,7 +167,7 @@ def monitor_time():
                 if item.strip()
             ]
 
-            #Aviod 
+            #Skip if not today's reminder
             if med.get("date","") != today:
                 continue
 
@@ -166,12 +184,16 @@ def monitor_time():
                     # Pop-up Reminder
                     window.after(0, lambda m=med, d=dosage, n=note, t=med_t:messagebox.showinfo("Medication Reminder", f"It's time to take {d} {m.get('name','')}!\n" f"Note: {n or 'None'}"))
 
-                    #Permanently save this completed reminder time
+                    #Mark this time as reminded
                     reminded_times.append(med_t)
-                    save_data(medicine_list)
+                    need_save = True#Marks need to be saved
                 
                     #Refresh Medicine List to show the latest reminder status
                     window.after(0, refresh_opened_list)
+
+        #Save only when changes occur
+        if need_save:
+            save_data(medicine_list)
 
         time.sleep(30)
 
@@ -238,14 +260,25 @@ def show_all_medicine():
             if reminder_date > today:
                 return "Not due"
         except ValueError:
-            pass
+            pass #If the date format is invalid, proceed to the next step
 
-        return "Not reminded"
+        today = datetime.now().strftime("%Y-%m-%d")
+        now_time = datetime.now().strftime("%H:%M")
+        #Check if the date is already in the past
+        if item.get("date", "") < today:
+            return "Past Due"
 
+        #Check if the date is today but every time has passed without a reminder
+        if item.get("date", "") == today and all(one_time < now_time for one_time in times):
+            return "Past due"
+        
+        return"Not reminded"
+    
     #Refresh listbox
     def refresh_listbox():
         lb.delete(0,tk.END)
         current = load_data()
+
         if len(current) == 0:
             lb.insert(tk.END, "No medicines have been added yet!")
         else:
