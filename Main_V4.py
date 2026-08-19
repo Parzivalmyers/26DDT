@@ -47,38 +47,44 @@ def save_data(data):
         json.dump(data,f,ensure_ascii=False,indent=2)
 
 
-#Create the Main Window
+#Create the Window
 window = tk.Tk()
 window.title("Medication Reminder")
 window.geometry("600x500")
-window.minsize(600, 500)#Main window minimum size
+window.minsize(600, 500)#Window minimum size
+
+#Main menu page
+main_menu_frame = tk.Frame(window)
+
+#Add reminder page
+add_reminder_frame = tk.Frame(window)
 
 #Create a text label on the window（Vision 2 newly added）
-tk.Label(window, text="Medication Reminder", font=("Arial",16)).pack(pady=8)
+tk.Label(add_reminder_frame, text="Add Medication Reminder", font=("Arial",16)).pack(pady=8)
 
 #Medicine Name Input
-tk.Label(window, text= "Medicine Name:").pack()
-med_name = tk.Entry(window, width=30)
+tk.Label(add_reminder_frame, text= "Medicine Name:").pack()
+med_name = tk.Entry(add_reminder_frame, width=30)
 med_name.pack()
 
 #Medication Time Input 
-tk.Label(window, text="Remind Time (HH:MM):").pack()
-med_time = tk.Entry(window, width=30)
+tk.Label(add_reminder_frame, text="Remind Time (HH:MM):").pack()
+med_time = tk.Entry(add_reminder_frame, width=30)
 med_time.pack()
 
 #Medication Dosage Input
-tk.Label(window, text= "Dosage:").pack()
-med_dosage = tk.Entry(window, width=30)
+tk.Label(add_reminder_frame, text= "Dosage:").pack()
+med_dosage = tk.Entry(add_reminder_frame, width=30)
 med_dosage.pack()
 
 #Reminder Date Input
-tk.Label(window, text= "Reminder Date (YYYY-MM-DD):").pack()
-med_date = tk.Entry(window, width=30)
+tk.Label(add_reminder_frame, text= "Reminder Date (YYYY-MM-DD):").pack()
+med_date = tk.Entry(add_reminder_frame, width=30)
 med_date.pack()
 
 #Note Input
-tk.Label(window, text= "Note (Optional):").pack()
-med_note = tk.Entry(window, width=30)
+tk.Label(add_reminder_frame, text= "Note (Optional):").pack()
+med_note = tk.Entry(add_reminder_frame, width=30)
 med_note.pack()
 
 #Store Medicine List
@@ -98,6 +104,17 @@ def refresh_opened_list():
             # Reset the reference if the window has been closed
             print(f"Error occurred while refreshing the list: {e}")
             list_refresh_func = None
+
+#Function of changing windows
+def show_main_menu():
+    add_reminder_frame.pack_forget()
+    main_menu_frame.pack(fill=tk.BOTH, expand=True)
+    window.update_idletasks()#Update Button Display Immediately
+
+def show_add_menu():
+    main_menu_frame.pack_forget()
+    add_reminder_frame.pack(fill=tk.BOTH, expand=True)
+    window.update_idletasks()#Update Input Box Display Immediately
 
 def add_medicine():
     name = med_name.get().strip ()
@@ -146,6 +163,22 @@ def add_medicine():
     med_note.delete(0,tk.END)
     #Refresh the opened list window after adding the medicine(Vision 3 newly added)
     refresh_opened_list()
+
+#Add new buttons for changing windows
+add_button_frame = tk.Frame(add_reminder_frame)
+add_button_frame.pack(pady=12)
+
+tk.Button(
+    add_button_frame,
+    text="Add Reminder",
+    command=add_medicine
+).pack(side=tk.LEFT,pady=12)
+
+tk.Button(
+    add_button_frame,
+    text="Back to Main Menu",
+    command=show_main_menu
+).pack(side=tk.LEFT, pady=12)
 
     
 #Background Monitoring Function
@@ -343,7 +376,7 @@ def show_all_medicine():
         tk.Label(edit_win, text="Medicine Name:").pack()#Pre‑fill the original name
         new_name_entry = tk.Entry(edit_win,width=28)
         new_name_entry.insert(0, target_item.get("name", ""))#Fill the old name into the input box
-        new_name_entry.pack()
+        new_name_entry.pack(pady=5)
 
         tk.Label(edit_win, text="Time(HH:MM):").pack()#Pre‑fill the original time
         new_time_entry = tk.Entry(edit_win,width=28)
@@ -446,19 +479,21 @@ def show_all_medicine():
         list_window_ref = None
         list_refresh_func = None
         list_win.destroy()
+        show_main_menu()
 
     list_win.protocol("WM_DELETE_WINDOW", on_list_window_close)
 
     #Add button for Medicine List that can return Add Medicine window
-    def back_to_add_menu():
+    def back_to_main_menu():
         on_list_window_close()
-        window.deiconify()
+        show_main_menu()
         window.lift()
+        window.update_idletasks()
 
     tk.Button(
         list_button_frame,
-        text="Back to Add Window",
-        command=back_to_add_menu
+        text="Back to Main Window",
+        command=back_to_main_menu
     ).pack(side=tk.LEFT, pady=12)
     
 
@@ -466,15 +501,48 @@ def show_all_medicine():
 monitor_thread = threading.Thread(target=monitor_time, daemon=True)
 monitor_thread.start()
 
-#Place buttons side-by-side, horizontally centered.
-main_button_frame = tk.Frame(window)
-main_button_frame.pack(pady=12)
-#Add Medicine Button    
-tk.Button(main_button_frame, text="Add Reminder", command=add_medicine).pack(side=tk.LEFT, pady=12)
-#Show All Medicines BUtton (Vision 2 newly added）
-tk.Button(main_button_frame, text="Show All Reminders", command=show_all_medicine).pack(side=tk.LEFT, pady=12)
+#Not needed
+# #Place buttons side-by-side, horizontally centered.
+# main_button_frame = tk.Frame(window)
+# main_button_frame.pack(pady=12)
+# #Add Medicine Button    
+# tk.Button(main_button_frame, text="Add Reminder", command=add_medicine).pack(side=tk.LEFT, pady=12)
+# #Show All Medicines BUtton (Vision 2 newly added）
+# tk.Button(main_button_frame, text="Show All Reminders", command=show_all_medicine).pack(side=tk.LEFT, pady=12)
 
+#Buttons for Main Menu
+tk.Label(
+    main_menu_frame,
+    text="Main Menu",
+    font=("Arial", 30, "bold")
+).pack(pady=(70,15))
 
+tk.Button(
+    main_menu_frame,
+    text="Add Reminder",
+    width=25,
+    height=2,
+    command=show_add_menu
+).pack(pady=12)
+
+tk.Button(
+    main_menu_frame,
+    text="Show All Reminders",
+    width=25,
+    height=2,
+    command=show_all_medicine
+).pack(pady=12)
+
+tk.Button(
+    main_menu_frame,
+    text="Exit",
+    width=25,
+    height=2,
+    command=window.destroy
+).pack(pady=12)
+
+#Start by showing the main menu
+main_menu_frame.pack(fill=tk.BOTH, expand=True)
 
 
 

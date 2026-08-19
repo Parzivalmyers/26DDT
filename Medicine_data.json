@@ -3,7 +3,7 @@
     "name": "Paracetamol",
     "time": "13:43",
     "dosage": "500 mg",
-    "date": "2026-7-14",
+    "date": "2026-9-14",
     "note": "",
     "reminded_times": []
   },
@@ -45,8 +45,16 @@
   {
     "name": "Aspirin",
     "dosage": "300 mg",
-    "date": "2026-8-14",
-    "time": "14:30",
+    "date": "2026-8-18",
+    "time": "14:30,12:20",
+    "note": "",
+    "reminded_times": []
+  },
+  {
+    "name": "sadhi",
+    "time": "12:20,13:20,19:39",
+    "dosage": "100mm",
+    "date": "2026-8-18",
     "note": "",
     "reminded_times": []
   }
