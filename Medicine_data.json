@@ -5,42 +5,60 @@
     "dosage": "500 mg",
     "date": "2026-9-14",
     "note": "",
-    "reminded_times": []
+    "reminded_times": [],
+    "repeat_type": "Once",
+    "weekdays": [],
+    "consecutive_days": 1
   },
   {
     "name": "Ibuprofen",
     "dosage": "200 mg",
     "date": "2026-8-19",
     "time": "13:45",
-    "reminded_times": []
+    "reminded_times": [],
+    "repeat_type": "Once",
+    "weekdays": [],
+    "consecutive_days": 1
   },
   {
     "name": "Cetirizine",
     "dosage": "5 mg",
     "date": "2026-8-20",
     "time": "14:20",
-    "reminded_times": []
+    "reminded_times": [],
+    "repeat_type": "Once",
+    "weekdays": [],
+    "consecutive_days": 1
   },
   {
     "name": "Panadol",
     "dosage": "4000 mg",
     "date": "2026-8-21",
     "time": "14:00",
-    "reminded_times": []
+    "reminded_times": [],
+    "repeat_type": "Once",
+    "weekdays": [],
+    "consecutive_days": 1
   },
   {
     "name": "Naprogesic",
     "dosage": "275 mg",
     "date": "2026-8-22",
     "time": "12:30",
-    "reminded_times": []
+    "reminded_times": [],
+    "repeat_type": "Once",
+    "weekdays": [],
+    "consecutive_days": 1
   },
   {
     "name": "Voltaren Rapid",
     "dosage": "12.5 mg",
     "date": "2026-8-23",
     "time": "11:59",
-    "reminded_times": []
+    "reminded_times": [],
+    "repeat_type": "Once",
+    "weekdays": [],
+    "consecutive_days": 1
   },
   {
     "name": "Aspirin",
@@ -48,7 +66,10 @@
     "date": "2026-8-18",
     "time": "14:30,12:20",
     "note": "",
-    "reminded_times": []
+    "reminded_times": [],
+    "repeat_type": "Once",
+    "weekdays": [],
+    "consecutive_days": 1
   },
   {
     "name": "sadhi",
@@ -56,6 +77,9 @@
     "dosage": "100mm",
     "date": "2026-8-18",
     "note": "",
-    "reminded_times": []
+    "reminded_times": [],
+    "repeat_type": "Once",
+    "weekdays": [],
+    "consecutive_days": 1
   }
 ]

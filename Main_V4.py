@@ -1,12 +1,12 @@
 #Import the tkinter library
 import tkinter as tk
-from tkinter import messagebox 
+from tkinter import messagebox, ttk
 #Vision 2 newly added
 import json
 import os
 import time
 import threading
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 #Store data file name（Vision 2 newly added）
@@ -24,9 +24,27 @@ def load_data():
             has_updated_data = False
 
             for medicine in data:
+                #Reminder Completion Records
                 if "reminded_times" not in medicine:
                     medicine["reminded_times"] = []
                     has_updated_data = True
+
+                #Repeat type
+                #Just once
+                if "repeat_type" not in medicine:
+                    medicine["repeat_type"] = "Once"
+                    has_updated_data = True
+
+                #Repeat by selected weekdays
+                if "weekdays" not in medicine:
+                    medicine["weekdays"] = []
+                    has_updated_data = True
+
+                #Consecutive reminder days
+                if "consecutive_days" not in medicine:
+                    medicine["consecutive_days"] = 1
+                    has_updated_data = True
+                    
 
             #Save the upgraded old records back to JSON
             if has_updated_data:
@@ -247,9 +265,9 @@ def show_all_medicine():
     #Create a new window for list
     list_win = tk.Toplevel(window)
     list_win.title("Medicine List")
-    list_win.geometry("700x500")
+    list_win.geometry("750x500")
     #List window minimum size
-    list_win.minsize(700,500)
+    list_win.minsize(750,500)
 
     #Save window reference
     list_window_ref = list_win
